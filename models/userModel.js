@@ -11,7 +11,10 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "A user must have a username"],
     },
-    email: String,
+    email: {
+      type: String,
+      required: [true, "A user must have a email"],
+    },
     contactNumber: String,
     password: {
       type: String,
@@ -31,10 +34,6 @@ const userSchema = new mongoose.Schema(
     vehicleType: {
       type: String,
       required: [true, "A user must have vechicle type"],
-    },
-    vehiclePlateNumber: {
-      type: String,
-      required: [true, "A user must have vehicle plate number"],
     },
     latitude: String,
     longitude: String,

@@ -13,11 +13,12 @@ exports.register = (req, res, next) => {
     let user = new User({
       name: req.body.name,
       username: req.body.username,
+      email: req.body.email,
       password: hashed,
+      contactNo: req.body.contactNo,
       role: req.body.role,
       gender: req.body.gender,
       vehicleType: req.body.vehicleType,
-      vehiclePlateNumber: req.body.vehiclePlateNumber,
     });
     user.save().then((data) => {
       res.json({
@@ -30,10 +31,10 @@ exports.register = (req, res, next) => {
 };
 
 exports.login = (req, res, next) => {
-  var username = req.body.username;
+  var email = req.body.email;
   var password = req.body.password;
 
-  User.findOne({ username }).then((user) => {
+  User.findOne({ email }).then((user) => {
     if (user) {
       bcrypt.compare(password, user.password, function (err, ismatch) {
         if (err) {
