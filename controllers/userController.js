@@ -12,11 +12,9 @@ exports.register = (req, res, next) => {
     }
     let user = new User({
       name: req.body.name,
-      username: req.body.username,
       email: req.body.email,
       password: hashed,
       contactNo: req.body.contactNo,
-      role: req.body.role,
       gender: req.body.gender,
       vehicleType: req.body.vehicleType,
     });

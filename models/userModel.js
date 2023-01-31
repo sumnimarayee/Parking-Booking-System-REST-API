@@ -7,10 +7,6 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, "A user must have a name"],
     },
-    username: {
-      type: String,
-      required: [true, "A user must have a username"],
-    },
     email: {
       type: String,
       required: [true, "A user must have a email"],
@@ -23,10 +19,6 @@ const userSchema = new mongoose.Schema(
     profilePictureURL: String,
     isStaff: Boolean,
     isBookingUser: Boolean,
-    role: {
-      type: String,
-      required: [true, "A user must have a role"],
-    },
     gender: {
       type: String,
       required: [true, "A user must have a gender"],
