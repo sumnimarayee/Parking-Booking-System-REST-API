@@ -12,6 +12,7 @@ const parkingLotSchema = new mongoose.Schema(
     },
     imageURLs: Array,
     managingStaff: {
+      //it holds the user _id.
       type: mongoose.Types.ObjectId,
       required: [true, "A parking lot must have a management staff"],
     },

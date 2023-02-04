@@ -1,8 +1,9 @@
 const User = require("../models/userModel");
+const parkingLotService = require("../services/parkingLot");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-exports.register = (req, res, next) => {
+exports.register = (req, res) => {
   bcrypt.hash(req.body.password, 10, function (err, hashed) {
     if (err) {
       res.json({
@@ -28,7 +29,7 @@ exports.register = (req, res, next) => {
   });
 };
 
-exports.login = (req, res, next) => {
+exports.login = (req, res) => {
   var email = req.body.email;
   var password = req.body.password;
 
@@ -63,5 +64,13 @@ exports.login = (req, res, next) => {
         message: "NO user found!",
       });
     }
+  });
+};
+
+exports.getAllParkingLots = async (req, res) => {
+  const parkingLots = await parkingLotService.fetchAllParkingLot();
+  res.status(200).json({
+    message: "ok",
+    data: parkingLots,
   });
 };
