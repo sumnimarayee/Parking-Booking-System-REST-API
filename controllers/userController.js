@@ -1,5 +1,4 @@
 const User = require("../models/userModel");
-const parkingLotService = require("../services/parkingLot");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -64,13 +63,5 @@ exports.login = (req, res) => {
         message: "NO user found!",
       });
     }
-  });
-};
-
-exports.getAllParkingLots = async (req, res) => {
-  const parkingLots = await parkingLotService.fetchAllParkingLot();
-  res.status(200).json({
-    message: "ok",
-    data: parkingLots,
   });
 };

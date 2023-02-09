@@ -2,10 +2,10 @@ const express = require("express");
 
 const authRoutes = require("./routes/authenticationRoute");
 const superAdminRoutes = require("./routes/superAdminRoute");
-const userRoutes = require("./routes/userRoute");
+const parkingLotRoutes = require("./routes/ParkingLotRoute");
 
 const router = express.Router();
 router.use(authRoutes);
 router.use("/super-admin", superAdminRoutes);
-router.use("/user", userRoutes);
+router.use("/parking-lot", parkingLotRoutes);
 module.exports = router;
