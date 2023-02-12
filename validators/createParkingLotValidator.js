@@ -1,6 +1,6 @@
 const { body, validationResult } = require("express-validator");
 
-const superAdminValidator = [
+const createParkingLotValidator = [
   [
     body("name")
       .exists()
@@ -53,4 +53,4 @@ const superAdminValidator = [
   },
 ];
 
-module.exports = superAdminValidator;
+module.exports = createParkingLotValidator;

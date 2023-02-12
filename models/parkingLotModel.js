@@ -45,6 +45,8 @@ const parkingLotSchema = new mongoose.Schema(
       type: String,
       required: [true, "A parking lot must have a longitude"],
     },
+    twoWheelerBookedSlots: Array,
+    fourWheelerBookedSlots: Array,
   },
   { timestamps: true }
 );

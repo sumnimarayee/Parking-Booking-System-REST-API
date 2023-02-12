@@ -1,4 +1,4 @@
-const parkingLotService = require("../services/parkingLot");
+const parkingLotService = require("../services/parkingLotService");
 
 exports.getAllParkingLots = async (req, res, next) => {
   try {
@@ -28,4 +28,17 @@ exports.getParkingLotById = async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+};
+
+exports.createAccount = async (req, res, next) => {
+  await parkingLotService.createNewParkingLot(
+    req.body.email,
+    req.body.name,
+    req.body.longitude,
+    req.body.latitude,
+    req.body.location
+  );
+  res.status(200).json({
+    message: "Success",
+  });
 };
