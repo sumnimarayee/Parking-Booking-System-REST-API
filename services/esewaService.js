@@ -30,3 +30,13 @@ exports.deductBalanceByUserId = async (userId, amountToDeduct) => {
     });
   }
 };
+
+exports.createNewEsewa = async (userId, pinNo) => {
+  const esewa = new Esewa({
+    userId,
+    pinNo,
+    balance: "1000",
+  });
+
+  const savedEsewa = await esewa.save();
+};

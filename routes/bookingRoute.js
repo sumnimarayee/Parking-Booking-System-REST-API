@@ -5,3 +5,5 @@ const bookingValidator = require("../validators/bookingValidator");
 const router = express.Router();
 
 router.post("/", bookingValidator, bookingController.createBooking);
+
+module.exports = router;

@@ -15,7 +15,7 @@ exports.getAllParkingLots = async (req, res, next) => {
 exports.deleteParkingLot = async (req, res, next) => {
   try {
     await parkingLotService.deleteParkingLotById(req.params.id);
-    res.status(200).json({ message: success });
+    res.status(200).json({ message: "success" });
   } catch (err) {
     next(err);
   }

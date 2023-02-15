@@ -5,7 +5,7 @@ exports.createBooking = async (req, res, next) => {
     req.body.bookedParkingLot,
     req.body.bookingUser,
     req.body.vehicleType,
-    req.body.VehiclePlateNo,
+    req.body.vehiclePlateNo,
     req.body.bookedTime,
     req.body.pinNo
   );

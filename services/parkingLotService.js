@@ -86,6 +86,8 @@ exports.createNewParkingLot = async (
       closingTime: "17:00",
       twoWheelerBookedSlots: [],
       fourWheelerBookedSlots: [],
+      currentAvailableBikeParkingSlot: 0,
+      currentAvailableCarParkingSlot: 0,
     });
     await parkingLot.save();
     return "";

@@ -43,44 +43,62 @@ exports.createNewBooking = async (
     throw new Error("Cannot request booking in this hour");
   }
   // check if the slot is available for the request
-  if (vehicleType === "twoWheeler") {
+  if (vehicleType == "twoWheeler") {
     if (parkingLot.currentAvailableBikeParkingSlot === 0) {
       throw new Error("Slot is not available");
     }
+    // find the next slot to book for the request in the array of slot and add it to array.
+    if (parkingLot.twoWheelerBookedSlots.length === 0) {
+      parkingLot.twoWheelerBookedSlots.push(1);
+    } else {
+      let pushAtLast = true;
+      for (let i = 0; i <= parkingLot.twoWheelerBookedSlots.length - 1; i++) {
+        const value = parkingLot.twoWheelerBookedSlots[i];
+        if (i !== value - 1) {
+          parkingLot.twoWheelerBookedSlots.splice(i, 0, i + 1);
+          pushAtLast = false;
+          break;
+        }
+      }
+      if (pushAtLast) {
+        parkingLot.twoWheelerBookedSlots.push(
+          parkingLot.twoWheelerBookedSlots.length + 1
+        );
+      }
+    }
+    parkingLot.currentAvailableBikeParkingSlot -= 1;
   }
-  if (vehicleType === "fourWheeler") {
+
+  if (vehicleType == "fourWheeler") {
     if (parkingLot.currentAvailableCarParkingSlot === 0) {
       throw new Error("Slot is not available");
     }
+    // find the next slot to book for the request in the array of slot and add it to array.
+    if (parkingLot.fourWheelerBookedSlots.length === 0) {
+      parkingLot.fourWheelerBookedSlots.push(1);
+    } else {
+      let pushAtLast = true;
+      for (let i = 0; i <= parkingLot.fourWheelerBookedSlots.length - 1; i++) {
+        const value = parkingLot.twoWheelerBookedSlots[i];
+        if (i !== value - 1) {
+          parkingLot.fourWheelerBookedSlots.splice(i, 0, i + 1);
+          pushAtLast = false;
+          break;
+        }
+      }
+      if (pushAtLast) {
+        parkingLot.fourWheelerBookedSlots.push(
+          parkingLot.fourWheelerBookedSlots.length + 1
+        );
+      }
+    }
+    parkingLot.currentAvailableCarParkingSlot -= 1;
   }
 
   // check if the esewa pin for that user is correct
   const esewa = await esewaService.fetchByUserId(bookingUser);
   if (esewa.pinNo != pinoNO) {
     throw new Error("Esewa pin is incorrect");
-  }
-
-  // find the next slot to book for the request in the array of slot and add it to array.
-  if (vehicleType === "twoWheeler") {
-    if (parkingLot.twoWheelerBookedSlots.length === 0) {
-      parkingLot.twoWheelerBookedSlots.push(0);
-    } else {
-      for (let i = 0; i <= parkingLot.twoWheelerBookedSlots.length; i++) {
-        const value = parkingLot.twoWheelerBookedSlots[i];
-        if (i !== value) {
-          parkingLot.twoWheelerBookedSlots.splice(i, 0, i);
-        }
-      }
-    }
-  }
-
-  // decrease the number of slots by 1
-  if (vehicleType === "twoWheeler") {
-    parkingLot.currentAvailableBikeParkingSlot -= 1;
-  }
-
-  if (vehicleType === "fourWheeler") {
-    parkingLot.currentAvailableCarParkingSlot -= 1;
   }
 
   // Calculate the amount to be deducted
@@ -94,33 +112,39 @@ exports.createNewBooking = async (
     estimatedBookedHour.toString().split(".")[0] + "." + estimatedBookedMinute;
   let totalAmount = 0;
   if (vehicleType === "twoWheeler") {
-    totalAmount = totalBookingTime * parkingLot.bikeParkingCostPerHour;
+    totalAmount =
+      estimatedBookedHour.toString().split(".")[0] *
+        parkingLot.bikeParkingCostPerHour +
+      (parkingLot.bikeParkingCostPerHour / 60) * estimatedBookedMinute;
   } else if (vehicleType === "fourWheeler") {
-    totalAmount = totalBookingTime * parkingLot.carParkingCostPerHour;
+    totalAmount =
+      estimatedBookedHour.toString().split(".")[0] *
+        parkingLot.carParkingCostPerHour +
+      (parkingLot.carParkingCostPerHour / 60) * estimatedBookedMinute;
   }
 
   // deduct the amount from esewa of that user
   await esewaService.deductBalanceByUserId(bookingUser, totalAmount);
 
   //update the parking lot
-  parkingLot.update();
+  parkingLot.save();
 
   // booking object is created
   let booking = new Booking({
     bookedParkingLot,
     bookingUser,
     vehicleType,
-    VehiclePlateNo,
+    vehiclePlateNo,
     bookedTime,
     bookingType: "online",
   });
   const savedBooking = await booking.save();
 
-  // payment object is created
+  //payment object is created
   let payment = new Payment({
-    bookingId,
-    paymentAmount,
-    paymentStatus: "completed",
+    bookingId: savedBooking._id,
+    paymentAmount: totalAmount,
+    paymentStatus: 1,
   });
   const savedPayment = await payment.save();
 };
