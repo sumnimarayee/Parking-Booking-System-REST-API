@@ -42,10 +42,10 @@ exports.login = (req, res) => {
           });
         }
         if (ismatch) {
-          let token = jwt.sign({ name: user._id }, "thesecrettoken", {
+          let token = jwt.sign({ id: user._id }, "thesecrettoken", {
             expiresIn: "10min",
           });
-          let refreshToken = jwt.sign({ name: user._id }, "thesecrettoken", {
+          let refreshToken = jwt.sign({ id: user._id }, "thesecrettoken", {
             expiresIn: "20min",
           });
           res.json({

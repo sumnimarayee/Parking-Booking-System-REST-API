@@ -3,7 +3,7 @@ const bookingService = require("../services/bookingService");
 exports.createBooking = async (req, res, next) => {
   bookingService.createNewBooking(
     req.body.bookedParkingLot,
-    req.body.bookingUser,
+    req.user._id,
     req.body.vehicleType,
     req.body.vehiclePlateNo,
     req.body.bookedTime,

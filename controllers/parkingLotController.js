@@ -2,6 +2,7 @@ const parkingLotService = require("../services/parkingLotService");
 
 exports.getAllParkingLots = async (req, res, next) => {
   try {
+    console.log("LAST");
     const parkingLots = await parkingLotService.fetchAllParkingLot();
     res.status(200).json({
       message: "ok",
