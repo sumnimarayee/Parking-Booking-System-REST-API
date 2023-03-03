@@ -1,8 +1,12 @@
 const ParkingLot = require("../models/parkingLotModel");
 const User = require("../models/userModel");
 
-exports.fetchAllParkingLot = async () => {
-  return await ParkingLot.aggregate([
+function timeout(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+exports.fetchAllParkingLot = async (minPrice, maxPrice, vehicleType) => {
+  //place in repository
+  const query = [
     {
       $project: {
         _id: 1,
@@ -18,7 +22,70 @@ exports.fetchAllParkingLot = async () => {
         location: 1,
       },
     },
-  ]);
+  ];
+  // maxprice only vechicletype = 4wheeler
+  if (minPrice) {
+    console.log("minprice = " + minPrice);
+    if (maxPrice) {
+      if (vehicleType === "twoWheeler") {
+        query.push({
+          $match: {
+            bikeParkingCostPerHour: {
+              $and: [
+                { $gte: parseInt(minPrice) },
+                { $lte: parseInt(maxPrice) },
+              ],
+            },
+          },
+        });
+      } else if (vehicleType === "fourWheeler") {
+        query.push({
+          $match: {
+            carParkingCostPerHour: {
+              $and: [
+                { $gte: parseInt(minPrice) },
+                { $lte: parseInt(maxPrice) },
+              ],
+            },
+          },
+        });
+      }
+    } else if (maxPrice === null || maxPrice === undefined) {
+      console.log("no max price");
+      if (vehicleType === "twoWheeler") {
+        console.log("two wheeler");
+        query.push({
+          $match: {
+            bikeParkingCostPerHour: { $gte: parseInt(minPrice) },
+          },
+        });
+      } else if (vehicleType === "fourWheeler") {
+        query.push({
+          $match: {
+            carParkingCostPerHour: { $gte: parseInt(minPrice) },
+          },
+        });
+      }
+    }
+  } else if (maxPrice) {
+    if (minPrice === null || minPrice === undefined) {
+      if (vehicleType === "twoWheeler") {
+        query.push({
+          $match: {
+            bikeParkingCostPerHour: { $lte: parseInt(maxPrice) },
+          },
+        });
+      } else if (vehicleType === "fourWheeler") {
+        query.push({
+          $match: {
+            carParkingCostPerHour: { $lte: parseInt(maxPrice) },
+          },
+        });
+      }
+    }
+  }
+
+  return await ParkingLot.aggregate(query);
 };
 
 exports.deleteParkingLotById = async (parkingLotId) => {

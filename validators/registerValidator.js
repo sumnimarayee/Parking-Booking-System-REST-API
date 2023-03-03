@@ -9,11 +9,6 @@ const registrationValidator = [
       .withMessage("name is empty")
       .isString()
       .withMessage("invalid name"),
-    body("username")
-      .exists()
-      .withMessage("username is missing")
-      .isString()
-      .withMessage("invalid username"),
     body("email")
       .exists()
       .withMessage("email is missing")

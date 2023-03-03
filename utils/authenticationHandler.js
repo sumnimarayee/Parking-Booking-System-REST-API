@@ -9,11 +9,12 @@ exports.validateToken = (req, res, next) => {
   } else {
     const token = authHeader.split(" ")[1];
     //the request header contains the token "Bearer <token>", split the string and use the second value in the split array.
-    jwt.verify(token, "thesecrettoken", async (err, userId) => {
+    jwt.verify(token, "thesecrettoken", async (err, userData) => {
+      //{id: "fjewhfwehr"}
       if (err) {
         res.status(403).send("Token invalid");
       } else {
-        userId = userId.id;
+        const userId = userData.id;
         const loggingInUser = await User.findById(userId);
         req.user = loggingInUser;
         next(); //proceed to the next action in the calling function
