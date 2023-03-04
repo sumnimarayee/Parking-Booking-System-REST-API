@@ -40,12 +40,16 @@ exports.createNewBooking = async (
   const validTimeBefore = `${validTimeBeforeHour}.${validTimeBeforeMinute}`;
 
   if (currentTime - validTimeAfter < 0 || currentTime - validTimeBefore > 0) {
-    throw new Error("Cannot request booking in this hour");
+    const error = new Error("Cannot request booking in this hour");
+    error.statusCode = 401;
+    throw error;
   }
   // check if the slot is available for the request
   if (vehicleType == "twoWheeler") {
     if (parkingLot.currentAvailableBikeParkingSlot === 0) {
-      throw new Error("Slot is not available");
+      const error = new Error("Slot is not available");
+      error.statusCode = 401;
+      throw error;
     }
     // find the next slot to book for the request in the array of slot and add it to array.
     if (parkingLot.twoWheelerBookedSlots.length === 0) {
@@ -71,7 +75,9 @@ exports.createNewBooking = async (
 
   if (vehicleType == "fourWheeler") {
     if (parkingLot.currentAvailableCarParkingSlot === 0) {
-      throw new Error("Slot is not available");
+      const error = new Error("Slot is not available");
+      error.statusCode = 401;
+      throw error;
     }
     // find the next slot to book for the request in the array of slot and add it to array.
     if (parkingLot.fourWheelerBookedSlots.length === 0) {
@@ -98,7 +104,9 @@ exports.createNewBooking = async (
   // check if the esewa pin for that user is correct
   const esewa = await esewaService.fetchByUserId(bookingUser);
   if (esewa.pinNo != pinoNO) {
-    throw new Error("Esewa pin is incorrect");
+    const error = new Error("Esewa pin is incorrect");
+    error.statusCode = 401;
+    throw error;
   }
 
   // Calculate the amount to be deducted

@@ -23,9 +23,29 @@ exports.fetchAllParkingLot = async (minPrice, maxPrice, vehicleType) => {
       },
     },
   ];
-  // maxprice only vechicletype = 4wheeler
+  const numberOnlyRegex = /^[0-9]*$/;
+  if (minPrice !== null && minPrice !== undefined) {
+    if (numberOnlyRegex.test(minPrice) === false) {
+      throw new Error("minPrice must be a number");
+    }
+  }
+  if (maxPrice !== null && maxPrice !== undefined) {
+    if (numberOnlyRegex.test(maxprice) === false) {
+      throw new Error("maxPrice must be a number");
+    }
+  }
+
+  if (
+    minPrice !== null &&
+    minPrice !== undefined &&
+    maxprice !== null &&
+    maxprice !== undefined
+  ) {
+    if (minPrice > maxPrice) {
+      throw new Error("minPrice must be less than maxPrice");
+    }
+  }
   if (minPrice) {
-    console.log("minprice = " + minPrice);
     if (maxPrice) {
       if (vehicleType === "twoWheeler") {
         query.push({
@@ -51,7 +71,6 @@ exports.fetchAllParkingLot = async (minPrice, maxPrice, vehicleType) => {
         });
       }
     } else if (maxPrice === null || maxPrice === undefined) {
-      console.log("no max price");
       if (vehicleType === "twoWheeler") {
         console.log("two wheeler");
         query.push({

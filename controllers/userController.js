@@ -1,45 +1,45 @@
 const User = require("../models/userModel");
-const esewaService = require("../services/esewaService");
+// const esewaService = require("../services/esewaService");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-exports.register = (req, res) => {
-  bcrypt.hash(req.body.password, 10, function (err, hashed) {
-    if (err) {
-      res.json({
-        status: "500",
-        message: err,
+exports.register = (req, res, next) => {
+  try {
+    bcrypt.hash(req.body.password, 10, function (err, hashed) {
+      if (err) {
+        throw new Error(err.message);
+      }
+      let user = new User({
+        name: req.body.name,
+        email: req.body.email,
+        password: hashed,
+        contactNo: req.body.contactNo,
+        gender: req.body.gender,
+        vehicleType: req.body.vehicleType,
       });
-    }
-    let user = new User({
-      name: req.body.name,
-      email: req.body.email,
-      password: hashed,
-      contactNo: req.body.contactNo,
-      gender: req.body.gender,
-      vehicleType: req.body.vehicleType,
-    });
-    user.save().then((data) => {
-      res.json({
-        status: 200,
-        message: "user registered successfully!",
-        data,
+      user.save().then((data) => {
+        res.json({
+          status: 200,
+          message: "user registered successfully!",
+          data,
+        });
       });
     });
-  });
+  } catch (err) {
+    next(err);
+  }
 };
 
-exports.login = (req, res) => {
-  var email = req.body.email;
-  var password = req.body.password;
+exports.login = async (req, res, next) => {
+  try {
+    var email = req.body.email;
+    var password = req.body.password;
 
-  User.findOne({ email }).then((user) => {
+    const user = await User.findOne({ email });
     if (user) {
       bcrypt.compare(password, user.password, function (err, ismatch) {
         if (err) {
-          res.json({
-            message: err,
-          });
+          next(new Error(err.message));
         }
         if (ismatch) {
           let token = jwt.sign({ id: user._id }, "thesecrettoken", {
@@ -54,15 +54,17 @@ exports.login = (req, res) => {
             refreshToken,
           });
         } else {
-          res.json({
-            message: "Password does not matched!",
-          });
+          const error = new Error("Invalid Password");
+          error.statusCode = 401;
+          next(error);
         }
       });
     } else {
-      res.json({
-        message: "NO user found!",
-      });
+      const error = new Error("No user found");
+      error.statusCode = 404;
+      throw error;
     }
-  });
+  } catch (err) {
+    next(err);
+  }
 };
