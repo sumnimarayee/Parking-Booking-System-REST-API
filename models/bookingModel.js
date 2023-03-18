@@ -22,6 +22,14 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: [true, "Booked time is required"],
     },
+    bookingType: {
+      type: String,
+      required: [true, "Booking type is required"],
+    },
+    bookingStatus: {
+      type: String,
+      required: [true, "Booking status is required"],
+    },
     bookingExtendedTime: String,
   },
   { timestamps: true }

@@ -10,6 +10,15 @@ app.use(cors());
 app.use(express.json());
 app.use(authRoutes);
 app.use(validateToken);
+
+app.use("/check-login", (req, res, next) => {
+  res.status(200).json({
+    data: {
+      loggedIn: true,
+    },
+  });
+});
+
 app.use(router);
 
 // error handling middleware

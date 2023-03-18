@@ -144,6 +144,7 @@ exports.createNewBooking = async (
     vehicleType,
     vehiclePlateNo,
     bookedTime,
+    bookingStatus: "ongoing",
     bookingType: "online",
   });
   const savedBooking = await booking.save();
@@ -155,4 +156,34 @@ exports.createNewBooking = async (
     paymentStatus: 1,
   });
   const savedPayment = await payment.save();
+};
+
+exports.createManualBooking = async (
+  bookedParkingLot,
+  vehicleType,
+  vehiclePlateNo,
+  bookingStartTime
+) => {
+  let booking = new Booking({
+    bookedParkingLot,
+    vehicleType,
+    vehiclePlateNo,
+    bookingStartTime,
+    bookingStatus: "ongoing",
+    bookingType: "offline",
+  });
+  const savedBooking = await booking.save();
+};
+
+exports.getDashboardBooking = async (status, bookingType) => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const filter = [
+    {
+      $match: {
+        createdAt: { $gte: today },
+      },
+    },
+  ];
+  const totalBooking = await Booking.aggregate();
 };

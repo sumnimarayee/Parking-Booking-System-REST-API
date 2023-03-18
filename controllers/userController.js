@@ -5,6 +5,7 @@ const jwt = require("jsonwebtoken");
 
 exports.register = (req, res, next) => {
   try {
+    //TODO what is 10?
     bcrypt.hash(req.body.password, 10, function (err, hashed) {
       if (err) {
         throw new Error(err.message);
@@ -52,6 +53,11 @@ exports.login = async (req, res, next) => {
             message: "Login successful!",
             token,
             refreshToken,
+            userRole: {
+              isBookingUser: user.isBookingUser,
+              isStaff: user.isStaff,
+              isSuperAdmin: user.isSuperAdmin,
+            },
           });
         } else {
           const error = new Error("Invalid Password");

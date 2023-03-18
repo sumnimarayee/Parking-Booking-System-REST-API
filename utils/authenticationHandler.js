@@ -14,9 +14,7 @@ exports.validateToken = (req, res, next) => {
       if (err) {
         res.status(403).send("Token invalid");
       } else {
-        const userId = userData.id;
-        const loggingInUser = await User.findById(userId);
-        req.user = loggingInUser;
+        req.user = await User.findById(userData.id);
         next(); //proceed to the next action in the calling function
       }
     }); //end of jwt.verify()

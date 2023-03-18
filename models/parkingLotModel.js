@@ -47,6 +47,7 @@ const parkingLotSchema = new mongoose.Schema(
     },
     twoWheelerBookedSlots: Array,
     fourWheelerBookedSlots: Array,
+    updatedByStaff: Boolean,
   },
   { timestamps: true }
 );

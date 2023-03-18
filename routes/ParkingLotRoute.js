@@ -7,5 +7,6 @@ router.get("/", parkingLotController.getAllParkingLots);
 router.delete("/:id", parkingLotController.deleteParkingLot);
 router.get("/:id", parkingLotController.getParkingLotById);
 router.post("/", createParkingLotValidator, parkingLotController.createAccount);
+router.patch("/:id", parkingLotController.updateParkingLot);
 
 module.exports = router;

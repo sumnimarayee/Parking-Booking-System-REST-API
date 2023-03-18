@@ -5,6 +5,7 @@ dotenv.config({ path: "./config.env" });
 const app = require("./app");
 
 const DB = mongoose
+
   .connect(process.env.DATABASE, {
     //connect method return promise.
     useNewUrlParser: true, // deal with some deprecation warnings.

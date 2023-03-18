@@ -1,18 +1,14 @@
+const { TokenExpiredError } = require("jsonwebtoken");
 const Esewa = require("../models/esewaModel");
 
 exports.fetchByUserId = async (userId) => {
-  try {
-    const esewa = await Esewa.findOne({ userId: userId });
-    if (esewa === null || esewa === undefined) {
-      throw new Error("Esewa for provided userid is not found");
-    }
-    return esewa;
-  } catch (err) {
-    return {
-      type: "error",
-      message: err.message,
-    };
+  const esewa = await Esewa.findOne({ userId: userId });
+  if (esewa === null || esewa === undefined) {
+    const error = new Error("Esewa for provided userid is not found");
+    error.statusCode = 401;
+    throw error;
   }
+  return esewa;
 };
 
 exports.deductBalanceByUserId = async (userId, amountToDeduct) => {
@@ -24,10 +20,8 @@ exports.deductBalanceByUserId = async (userId, amountToDeduct) => {
     esewaObj.balance -= amountToDeduct;
     await esewaObj.update();
   } catch (err) {
-    throw new Error({
-      type: "error",
-      message: err.message,
-    });
+    err.statusCode = 401;
+    throw err;
   }
 };
 

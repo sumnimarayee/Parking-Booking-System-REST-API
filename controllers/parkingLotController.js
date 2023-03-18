@@ -32,7 +32,6 @@ exports.getParkingLotById = async (req, res, next) => {
     res.status(200).json({ message: "success", data: result });
   } catch (err) {
     next(err);
-    console.log(err);
   }
 };
 
@@ -47,4 +46,13 @@ exports.createAccount = async (req, res, next) => {
   res.status(200).json({
     message: "Success",
   });
+};
+
+exports.updateParkingLot = async (req, res, next) => {
+  try {
+    const parkingLotId = req.params.id;
+    await parkingLotService.updateParkingLot(req.body, parkingLotId);
+  } catch (err) {
+    next(err);
+  }
 };

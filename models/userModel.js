@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema(
     profilePictureURL: String,
     isStaff: Boolean,
     isBookingUser: Boolean,
+    isSuperAdmin: Boolean,
     gender: {
       type: String,
       required: [true, "A user must have a gender"],
