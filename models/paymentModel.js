@@ -10,10 +10,6 @@ const paymentSchema = new mongoose.Schema(
       type: Number,
       required: [true, "A payment must have a payment amount"],
     },
-    paymentStatus: {
-      type: Number,
-      required: [true, "A payment must have a payment status"],
-    },
   },
   { timestamps: true }
 );

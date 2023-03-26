@@ -17,9 +17,18 @@ const userSchema = new mongoose.Schema(
       required: [true, "A user must have a password"],
     },
     profilePictureURL: String,
-    isStaff: Boolean,
-    isBookingUser: Boolean,
-    isSuperAdmin: Boolean,
+    isStaff: {
+      type: Boolean,
+      required: [true, "A user can be a staff member"],
+    },
+    isBookingUser: {
+      type: Boolean,
+      required: [true, "A user can be a booking user"],
+    },
+    isSuperAdmin: {
+      type: Boolean,
+      required: [true, "A user can be a super admin"],
+    },
     gender: {
       type: String,
       required: [true, "A user must have a gender"],
@@ -30,6 +39,7 @@ const userSchema = new mongoose.Schema(
     },
     latitude: String,
     longitude: String,
+    refreshToken: String,
   },
   { timestamps: true }
 );

@@ -55,7 +55,7 @@ const registrationValidator = [
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      res.status(402).json({ message: "invalid payload", ...errors });
+      res.status(400).json({ message: "invalid payload", ...errors });
     } else {
       next();
     }

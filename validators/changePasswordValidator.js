@@ -1,14 +1,7 @@
 const { body, validationResult } = require("express-validator");
-// const mongodb = require("mongodb");
-const loginValidator = [
+
+const changePasswordValidator = [
   [
-    body("email")
-      .exists()
-      .withMessage("email is missing")
-      .notEmpty()
-      .withMessage("email is empty")
-      .isEmail()
-      .withMessage("invalid email"),
     body("password")
       .exists()
       .withMessage("password is missing")
@@ -17,14 +10,13 @@ const loginValidator = [
       .isString()
       .withMessage("invalid password")
       .isLength({ min: 6 })
-      .withMessage("password minimum length must be 6 characters"),
+      .withMessage("password must be at least 6 characters"),
   ],
   /**
    * @param {express.Request} req
    * @param {express.Response} res
    * @param {express.NextFunction} next
    */
-
   (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -35,4 +27,4 @@ const loginValidator = [
   },
 ];
 
-module.exports = loginValidator;
+module.exports = changePasswordValidator;

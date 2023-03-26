@@ -4,20 +4,21 @@ const router = require("./index");
 const app = express();
 const authRoutes = require("./routes/authenticationRoute");
 const { validateToken } = require("./utils/authenticationHandler");
+const cookieParser = require("cookie-parser");
+const { credentials } = require("./utils/credentials");
+const corsOptions = require("./utils/corsOption");
 
-app.use(cors());
+// Handle options credentials check - before CORS!
+// and fetch cookies credentials requirement
+app.use(credentials);
+
+// Cross Origin Resource Sharing
+app.use(cors(corsOptions));
 
 app.use(express.json());
+app.use(cookieParser());
 app.use(authRoutes);
 app.use(validateToken);
-
-app.use("/check-login", (req, res, next) => {
-  res.status(200).json({
-    data: {
-      loggedIn: true,
-    },
-  });
-});
 
 app.use(router);
 

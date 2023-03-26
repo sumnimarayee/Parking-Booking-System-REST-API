@@ -51,7 +51,33 @@ exports.createAccount = async (req, res, next) => {
 exports.updateParkingLot = async (req, res, next) => {
   try {
     const parkingLotId = req.params.id;
-    await parkingLotService.updateParkingLot(req.body, parkingLotId);
+    const data = await parkingLotService.updateParkingLot(
+      req.body,
+      parkingLotId
+    );
+    setTimeout(() => {
+      res.status(200).json({
+        message: "Success",
+        data,
+      });
+    }, 5000);
+    // res.status(200).json({
+    //   message: "Success",
+    //   data,
+    // });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getParkingLotByStaffId = async (req, res, next) => {
+  try {
+    const staffId = req.params.id;
+    const data = await parkingLotService.fetchByStaffId(staffId);
+    res.status(200).json({
+      message: "Success",
+      data,
+    });
   } catch (err) {
     next(err);
   }

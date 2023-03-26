@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const ParkingLot = require("../models/parkingLotModel");
 // const esewaService = require("../services/esewaService");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -17,6 +18,9 @@ exports.register = (req, res, next) => {
         contactNo: req.body.contactNo,
         gender: req.body.gender,
         vehicleType: req.body.vehicleType,
+        isStaff: false,
+        isBookingUser: true,
+        isSuperAdmin: false,
       });
       user.save().then((data) => {
         res.json({
@@ -38,39 +42,139 @@ exports.login = async (req, res, next) => {
 
     const user = await User.findOne({ email });
     if (user) {
-      bcrypt.compare(password, user.password, function (err, ismatch) {
+      bcrypt.compare(password, user.password, async function (err, ismatch) {
         if (err) {
           next(new Error(err.message));
         }
         if (ismatch) {
           let token = jwt.sign({ id: user._id }, "thesecrettoken", {
-            expiresIn: "10min",
+            expiresIn: "30min",
           });
           let refreshToken = jwt.sign({ id: user._id }, "thesecrettoken", {
-            expiresIn: "20min",
+            expiresIn: "1d",
+          });
+          user.refreshToken = refreshToken;
+          await user.save();
+          res.cookie("jwt", refreshToken, {
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000,
           });
           res.json({
             message: "Login successful!",
             token,
-            refreshToken,
-            userRole: {
+            role: {
               isBookingUser: user.isBookingUser,
               isStaff: user.isStaff,
               isSuperAdmin: user.isSuperAdmin,
             },
+            id: user._id,
           });
         } else {
-          const error = new Error("Invalid Password");
+          const error = new Error("Invalid Credentials");
           error.statusCode = 401;
           next(error);
         }
       });
     } else {
-      const error = new Error("No user found");
-      error.statusCode = 404;
+      const error = new Error("Invalid Credentials");
+      error.statusCode = 401;
       throw error;
     }
   } catch (err) {
     next(err);
+  }
+};
+
+exports.updatePassword = (req, res, next) => {
+  try {
+    bcrypt.hash(req.body.password, 10, async function (err, hashed) {
+      if (err) {
+        throw new Error(err.message);
+      }
+
+      const user = await User.findById(req.body.id);
+      if (user.isStaff) {
+        const parkingLot = await ParkingLot.findOne({
+          managingStaff: user.id,
+        }).exec();
+        const toUpdateItems = { ...parkingLot.updatedItems };
+        toUpdateItems.password = true;
+        parkingLot.updatedItems = { ...toUpdateItems };
+        await parkingLot.save();
+      }
+      user.password = hashed;
+      user.save().then(() => {
+        res.json({
+          status: 200,
+          message: "password successfully updated!",
+        });
+      });
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.refresh = async (req, res) => {
+  try {
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(401);
+    const refreshToken = cookies.jwt;
+
+    const foundUser = await User.findOne({ refreshToken }).exec();
+    if (!foundUser) return res.sendStatus(403); //Forbidden
+    // evaluate jwt
+    jwt.verify(refreshToken, "thesecrettoken", (err, decoded) => {
+      if (err || foundUser._id.toString() !== decoded.id)
+        return res.sendStatus(403);
+      // const roles = Object.values(foundUser.roles);
+      let token = jwt.sign({ id: decoded.id }, "thesecrettoken", {
+        expiresIn: "30min",
+      });
+      // res.json({ roles, accessToken })
+      res.json({
+        accessToken: token,
+        id: foundUser.id,
+        role: {
+          isBookingUser: foundUser.isBookingUser,
+          isStaff: foundUser.isStaff,
+          isSuperAdmin: foundUser.isSuperAdmin,
+        },
+      });
+    });
+  } catch (err) {
+    console.log(err);
+  }
+};
+
+exports.logout = async (req, res, next) => {
+  try {
+    // On client, also delete the accessToken
+
+    const cookies = req.cookies;
+    if (!cookies?.jwt) return res.sendStatus(204); //No content
+    const refreshToken = cookies.jwt;
+
+    // Is refreshToken in db?
+    const foundUser = await User.findOne({ refreshToken }).exec();
+    if (!foundUser) {
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        sameSite: "None",
+        secure: true,
+      });
+      return res.sendStatus(204);
+    }
+
+    // Delete refreshToken in db
+    foundUser.refreshToken = "";
+    const result = await foundUser.save();
+    console.log(result);
+
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+    res.sendStatus(204);
+  } catch (err) {
+    // next(err);
+    console.log(err);
   }
 };

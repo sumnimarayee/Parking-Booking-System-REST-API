@@ -8,7 +8,6 @@ const bookingSchema = new mongoose.Schema(
     },
     bookingUser: {
       type: mongoose.Types.ObjectId,
-      required: [true, "A booking must have a booking user"],
     },
     vehicleType: {
       type: String,
@@ -30,7 +29,10 @@ const bookingSchema = new mongoose.Schema(
       type: String,
       required: [true, "Booking status is required"],
     },
-    bookingExtendedTime: String,
+    assignedSlot: {
+      type: Number,
+      required: [true, "Assigned slot is required"],
+    },
   },
   { timestamps: true }
 );

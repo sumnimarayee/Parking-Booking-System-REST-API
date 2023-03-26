@@ -44,62 +44,8 @@ exports.createNewBooking = async (
     error.statusCode = 401;
     throw error;
   }
-  // check if the slot is available for the request
-  if (vehicleType == "twoWheeler") {
-    if (parkingLot.currentAvailableBikeParkingSlot === 0) {
-      const error = new Error("Slot is not available");
-      error.statusCode = 401;
-      throw error;
-    }
-    // find the next slot to book for the request in the array of slot and add it to array.
-    if (parkingLot.twoWheelerBookedSlots.length === 0) {
-      parkingLot.twoWheelerBookedSlots.push(1);
-    } else {
-      let pushAtLast = true;
-      for (let i = 0; i <= parkingLot.twoWheelerBookedSlots.length - 1; i++) {
-        const value = parkingLot.twoWheelerBookedSlots[i];
-        if (i !== value - 1) {
-          parkingLot.twoWheelerBookedSlots.splice(i, 0, i + 1);
-          pushAtLast = false;
-          break;
-        }
-      }
-      if (pushAtLast) {
-        parkingLot.twoWheelerBookedSlots.push(
-          parkingLot.twoWheelerBookedSlots.length + 1
-        );
-      }
-    }
-    parkingLot.currentAvailableBikeParkingSlot -= 1;
-  }
 
-  if (vehicleType == "fourWheeler") {
-    if (parkingLot.currentAvailableCarParkingSlot === 0) {
-      const error = new Error("Slot is not available");
-      error.statusCode = 401;
-      throw error;
-    }
-    // find the next slot to book for the request in the array of slot and add it to array.
-    if (parkingLot.fourWheelerBookedSlots.length === 0) {
-      parkingLot.fourWheelerBookedSlots.push(1);
-    } else {
-      let pushAtLast = true;
-      for (let i = 0; i <= parkingLot.fourWheelerBookedSlots.length - 1; i++) {
-        const value = parkingLot.twoWheelerBookedSlots[i];
-        if (i !== value - 1) {
-          parkingLot.fourWheelerBookedSlots.splice(i, 0, i + 1);
-          pushAtLast = false;
-          break;
-        }
-      }
-      if (pushAtLast) {
-        parkingLot.fourWheelerBookedSlots.push(
-          parkingLot.fourWheelerBookedSlots.length + 1
-        );
-      }
-    }
-    parkingLot.currentAvailableCarParkingSlot -= 1;
-  }
+  const assignedSlot = checkAndAssignSlots(parkingLot, vehicleType);
 
   // check if the esewa pin for that user is correct
   const esewa = await esewaService.fetchByUserId(bookingUser);
@@ -146,6 +92,7 @@ exports.createNewBooking = async (
     bookedTime,
     bookingStatus: "ongoing",
     bookingType: "online",
+    assignedSlot,
   });
   const savedBooking = await booking.save();
 
@@ -153,9 +100,76 @@ exports.createNewBooking = async (
   let payment = new Payment({
     bookingId: savedBooking._id,
     paymentAmount: totalAmount,
-    paymentStatus: 1,
   });
   const savedPayment = await payment.save();
+};
+
+const checkAndAssignSlots = (parkingLot, vehicleType) => {
+  // check if the slot is available for the request
+  let assignedSlot = 0;
+  if (vehicleType == "twoWheeler") {
+    if (parkingLot.currentAvailableBikeParkingSlot === 0) {
+      const error = new Error("Slot is not available");
+      error.statusCode = 401;
+      throw error;
+    }
+    // find the next slot to book for the request in the array of slot and add it to array.
+    if (parkingLot.twoWheelerBookedSlots.length === 0) {
+      parkingLot.twoWheelerBookedSlots.push(1);
+      assignedSlot = 1;
+    } else {
+      let pushAtLast = true;
+      for (let i = 0; i <= parkingLot.twoWheelerBookedSlots.length - 1; i++) {
+        const value = parkingLot.twoWheelerBookedSlots[i];
+        if (i !== value - 1) {
+          parkingLot.twoWheelerBookedSlots.splice(i, 0, i + 1);
+          pushAtLast = false;
+          assignedSlot = i + 1;
+          break;
+        }
+      }
+      if (pushAtLast) {
+        parkingLot.twoWheelerBookedSlots.push(
+          parkingLot.twoWheelerBookedSlots.length + 1
+        );
+        assignedSlot = parkingLot.twoWheelerBookedSlots.length + 1;
+      }
+    }
+    parkingLot.currentAvailableBikeParkingSlot -= 1;
+  }
+
+  if (vehicleType == "fourWheeler") {
+    if (parkingLot.currentAvailableCarParkingSlot === 0) {
+      const error = new Error("Slot is not available");
+      error.statusCode = 401;
+      throw error;
+    }
+    // find the next slot to book for the request in the array of slot and add it to array.
+    if (parkingLot.fourWheelerBookedSlots.length === 0) {
+      parkingLot.fourWheelerBookedSlots.push(1);
+      assignedSlot = 1;
+    } else {
+      let pushAtLast = true;
+      for (let i = 0; i <= parkingLot.fourWheelerBookedSlots.length - 1; i++) {
+        const value = parkingLot.twoWheelerBookedSlots[i];
+        if (i !== value - 1) {
+          parkingLot.fourWheelerBookedSlots.splice(i, 0, i + 1);
+          pushAtLast = false;
+          assignedSlot = i + 1;
+          break;
+        }
+      }
+      if (pushAtLast) {
+        parkingLot.fourWheelerBookedSlots.push(
+          parkingLot.fourWheelerBookedSlots.length + 1
+        );
+        assignedSlot = parkingLot.fourWheelerBookedSlots.length + 1;
+      }
+    }
+    parkingLot.currentAvailableCarParkingSlot -= 1;
+  }
+
+  return assignedSlot;
 };
 
 exports.createManualBooking = async (
@@ -164,18 +178,29 @@ exports.createManualBooking = async (
   vehiclePlateNo,
   bookingStartTime
 ) => {
+  bookedTime = bookingStartTime + "-";
+
+  const parkingLot = await parkingLotService.fetchParkingLotById(
+    bookedParkingLot
+  );
+
+  const time = new Date();
+
+  const assignedSlot = checkAndAssignSlots(parkingLot, vehicleType);
+
   let booking = new Booking({
     bookedParkingLot,
     vehicleType,
     vehiclePlateNo,
-    bookingStartTime,
+    bookedTime,
     bookingStatus: "ongoing",
     bookingType: "offline",
+    assignedSlot,
   });
   const savedBooking = await booking.save();
 };
 
-exports.getDashboardBooking = async (status, bookingType) => {
+exports.getDashboardBooking = async (parkingLotId) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const filter = [
@@ -184,6 +209,20 @@ exports.getDashboardBooking = async (status, bookingType) => {
         createdAt: { $gte: today },
       },
     },
+    { $match: { bookedParkingLot: parkingLotId } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "bookingUser",
+        foreignField: "_id",
+        as: "user",
+      },
+    },
+    {
+      $unwind: "$user",
+    },
   ];
-  const totalBooking = await Booking.aggregate();
+
+  const totalBooking = await Booking.aggregate(filter).exec();
+  return totalBooking;
 };

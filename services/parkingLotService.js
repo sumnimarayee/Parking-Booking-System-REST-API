@@ -1,6 +1,8 @@
 const ParkingLot = require("../models/parkingLotModel");
 const User = require("../models/userModel");
 const bcrypt = require("bcrypt");
+const bookings = require("../models/bookingModel");
+const bookingService = require("../services/bookingService");
 
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -127,7 +129,7 @@ exports.fetchParkingLotById = async (parkingLotId) => {
   const parkingLot = await ParkingLot.findById(parkingLotId);
   if (parkingLot === null || parkingLot === undefined) {
     const error = new Error("Parking Lot with provided id does not exist");
-    error.statusCode = 4041;
+    error.statusCode = 401;
     throw error;
   }
   return parkingLot;
@@ -140,49 +142,60 @@ exports.createNewParkingLot = async (
   latitude,
   location
 ) => {
-  let managingStaff = new User({
-    name: "staff",
-    email: email,
-    password: "password",
-    contactNo: "",
-    gender: " ",
-    vehicleType: " ",
-    isStaff: true,
-    isBookingUser: false,
+  await bcrypt.hash("password", 10, async function (err, hashed) {
+    if (err) {
+      throw new Error(err.message);
+    }
+    let managingStaff = new User({
+      name: "staff",
+      email: email,
+      password: hashed,
+      contactNo: "",
+      gender: " ",
+      vehicleType: " ",
+      isStaff: true,
+      isBookingUser: false,
+      isSuperAdmin: false,
+    });
+
+    const createdStaff = await managingStaff.save();
+    let parkingLot = new ParkingLot({
+      name: name,
+      longitude: longitude,
+      latitude: latitude,
+      location: location,
+      managingStaff: createdStaff._id,
+      bikeParkingCapacity: 0,
+      carParkingCapacity: 0,
+      bikeParkingCostPerHour: 0,
+      carParkingCostPerHour: 0,
+      openingTime: "9:00",
+      closingTime: "17:00",
+      twoWheelerBookedSlots: [],
+      fourWheelerBookedSlots: [],
+      currentAvailableBikeParkingSlot: 0,
+      currentAvailableCarParkingSlot: 0,
+      updatedItems: {
+        bikeParkingCapacity: false,
+        carParkingCapacity: false,
+        bikeParkingCostPerHour: false,
+        carParkingCostPerHour: false,
+        openingTime: false,
+        closingTime: false,
+        name: true,
+        location: true,
+        password: false,
+        imageURLs: false,
+      },
+    });
+    await parkingLot.save();
   });
-  const createdStaff = await managingStaff.save();
-  let parkingLot = new ParkingLot({
-    name: name,
-    longitude: longitude,
-    latitude: latitude,
-    location: location,
-    managingStaff: createdStaff._id,
-    bikeParkingCapacity: 0,
-    carParkingCapacity: 0,
-    bikeParkingCostPerHour: 0,
-    carParkingCostPerHour: 0,
-    openingTime: "9:00",
-    closingTime: "17:00",
-    twoWheelerBookedSlots: [],
-    fourWheelerBookedSlots: [],
-    currentAvailableBikeParkingSlot: 0,
-    currentAvailableCarParkingSlot: 0,
-  });
-  await parkingLot.save();
 };
 
 //future => change position(lat lng)
 exports.updateParkingLot = async (data, parkingLotId) => {
   const parkingLotToUpdate = await ParkingLot.findById(parkingLotId);
-  const currentUser = req.user;
-
-  bcrypt.hash(data.password, 10, async function (err, hashed) {
-    if (err) {
-      throw new Error(err.message);
-    }
-    currentUser.password = hashed;
-    await currentUser.update();
-  });
+  const toUpdateItems = { ...parkingLotToUpdate.updatedItems };
 
   if (data.name) {
     parkingLotToUpdate.name = data.name;
@@ -194,36 +207,63 @@ exports.updateParkingLot = async (data, parkingLotId) => {
 
   if (data.imageURLs) {
     parkingLotToUpdate.imageURLs = data.imageURLs;
+    toUpdateItems.imageURLs = true;
   }
 
   if (data.bikeParkingCapacity) {
     parkingLotToUpdate.bikeParkingCapacity = data.bikeParkingCapacity;
+    toUpdateItems.bikeParkingCapacity = true;
   }
 
   if (data.carParkingCapacity) {
     parkingLotToUpdate.carParkingCapacity = data.carParkingCapacity;
+    toUpdateItems.carParkingCapacity = true;
   }
 
   if (data.bikeParkingCostPerHour) {
     parkingLotToUpdate.bikeParkingCostPerHour = data.bikeParkingCostPerHour;
+    toUpdateItems.bikeParkingCostPerHour = true;
   }
 
   if (data.carParkingCostPerHour) {
     parkingLotToUpdate.carParkingCostPerHour = data.carParkingCostPerHour;
+    toUpdateItems.carParkingCostPerHour = true;
   }
 
   if (data.openingTime) {
     parkingLotToUpdate.openingTime = data.openingTime;
+    toUpdateItems.openingTime = true;
   }
 
   if (data.closingTime) {
     parkingLotToUpdate.closingTime = data.closingTime;
+    toUpdateItems.closingTime = true;
   }
   if (data.contactNO) {
     parkingLotToUpdate.contactNO = data.contactNO;
   }
+  parkingLotToUpdate.updatedItems = { ...toUpdateItems };
+  // parkingLotToUpdate.updatedByStaff = true;
 
-  parkingLotToUpdate.updatedByStaff = true;
+  await parkingLotToUpdate.save();
+  return parkingLotToUpdate;
+};
 
-  await parkingLotToUpdate.update();
+exports.fetchByStaffId = async (staffId, filters) => {
+  const data = {};
+  const parkingLot = await ParkingLot.findOne({
+    managingStaff: staffId,
+  }).exec();
+  if (!parkingLot) {
+    const error = new Error("Parking Lot does not exist");
+    error.statusCode = 401;
+    throw error;
+  }
+  data.parkingLot = parkingLot;
+
+  const bookings = bookingService.getDashboardBooking(parkingLot._id);
+
+  data.bookings = bookings;
+
+  return data;
 };
