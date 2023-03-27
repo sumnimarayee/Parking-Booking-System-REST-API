@@ -1,6 +1,5 @@
 const User = require("../models/userModel");
 const ParkingLot = require("../models/parkingLotModel");
-// const esewaService = require("../services/esewaService");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 

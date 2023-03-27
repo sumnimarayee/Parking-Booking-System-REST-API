@@ -11,6 +11,22 @@ exports.fetchAllParkingLot = async (minPrice, maxPrice, vehicleType) => {
   //place in repository
   const query = [
     {
+      $match: {
+        updatedItems: {
+          bikeParkingCapacity: true,
+          carParkingCapacity: true,
+          bikeParkingCostPerHour: true,
+          carParkingCostPerHour: true,
+          openingTime: true,
+          closingTime: true,
+          name: true,
+          location: true,
+          password: true,
+          imageURLs: true,
+        },
+      },
+    },
+    {
       $project: {
         _id: 1,
         name: 1,
@@ -173,8 +189,6 @@ exports.createNewParkingLot = async (
       closingTime: "17:00",
       twoWheelerBookedSlots: [],
       fourWheelerBookedSlots: [],
-      currentAvailableBikeParkingSlot: 0,
-      currentAvailableCarParkingSlot: 0,
       updatedItems: {
         bikeParkingCapacity: false,
         carParkingCapacity: false,

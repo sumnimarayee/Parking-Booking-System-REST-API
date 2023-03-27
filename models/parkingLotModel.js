@@ -24,8 +24,6 @@ const parkingLotSchema = new mongoose.Schema(
       type: Number,
       required: [true, "A parking lot must have a carParkingCapacity"],
     },
-    currentAvailableBikeParkingSlot: Number,
-    currentAvailableCarParkingSlot: Number,
     bikeParkingCostPerHour: {
       type: Number,
       required: [true, "A parking lot must have a Bike parking cost per hour"],

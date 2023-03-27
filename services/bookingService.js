@@ -1,7 +1,6 @@
 const Booking = require("../models/bookingModel");
 const ParkingLot = require("../models/parkingLotModel");
 const parkingLotService = require("../services/parkingLotService");
-const esewaService = require("../services/esewaService");
 const Payment = require("../models/paymentModel");
 
 exports.createNewBooking = async (
@@ -27,6 +26,10 @@ exports.createNewBooking = async (
   substractedMinuteForOpeningTime < 0
     ? (validTimeAfterMinute = substractedMinuteForOpeningTime + 60)
     : (validTimeAfterMinute = substractedMinuteForOpeningTime);
+  validTimeAfterMinute =
+    validTimeAfterMinute <= 9
+      ? "0" + validTimeAfterMinute
+      : validTimeAfterMinute;
   const validTimeAfter = `${validTimeAfterHour}.${validTimeAfterMinute}`;
 
   const parkingLotClosingTime = parkingLot.closingTime.split(":");
@@ -37,6 +40,10 @@ exports.createNewBooking = async (
   substractedMinuteForClosingTime < 0
     ? (validTimeBeforeMinute = substractedMinuteForClosingTime + 60)
     : (validTimeBeforeMinute = substractedMinuteForClosingTime);
+  validTimeBeforeMinute =
+    validTimeBeforeMinute <= 9
+      ? "0" + validTimeBeforeMinute
+      : validTimeBeforeMinute;
   const validTimeBefore = `${validTimeBeforeHour}.${validTimeBeforeMinute}`;
 
   if (currentTime - validTimeAfter < 0 || currentTime - validTimeBefore > 0) {
@@ -46,14 +53,6 @@ exports.createNewBooking = async (
   }
 
   const assignedSlot = checkAndAssignSlots(parkingLot, vehicleType);
-
-  // check if the esewa pin for that user is correct
-  const esewa = await esewaService.fetchByUserId(bookingUser);
-  if (esewa.pinNo != pinoNO) {
-    const error = new Error("Esewa pin is incorrect");
-    error.statusCode = 401;
-    throw error;
-  }
 
   // Calculate the amount to be deducted
   const bookTime = bookedTime.split("-");
@@ -76,9 +75,6 @@ exports.createNewBooking = async (
         parkingLot.carParkingCostPerHour +
       (parkingLot.carParkingCostPerHour / 60) * estimatedBookedMinute;
   }
-
-  // deduct the amount from esewa of that user
-  await esewaService.deductBalanceByUserId(bookingUser, totalAmount);
 
   //update the parking lot
   parkingLot.save();
@@ -108,7 +104,9 @@ const checkAndAssignSlots = (parkingLot, vehicleType) => {
   // check if the slot is available for the request
   let assignedSlot = 0;
   if (vehicleType == "twoWheeler") {
-    if (parkingLot.currentAvailableBikeParkingSlot === 0) {
+    if (
+      parkingLot.twoWheelerBookedSlots.length === parkingLot.bikeParkingCapacity
+    ) {
       const error = new Error("Slot is not available");
       error.statusCode = 401;
       throw error;
@@ -135,11 +133,12 @@ const checkAndAssignSlots = (parkingLot, vehicleType) => {
         assignedSlot = parkingLot.twoWheelerBookedSlots.length + 1;
       }
     }
-    parkingLot.currentAvailableBikeParkingSlot -= 1;
   }
 
   if (vehicleType == "fourWheeler") {
-    if (parkingLot.currentAvailableCarParkingSlot === 0) {
+    if (
+      parkingLot.fourWheelerBookedSlots.length === parkingLot.carParkingCapacity
+    ) {
       const error = new Error("Slot is not available");
       error.statusCode = 401;
       throw error;
@@ -166,7 +165,6 @@ const checkAndAssignSlots = (parkingLot, vehicleType) => {
         assignedSlot = parkingLot.fourWheelerBookedSlots.length + 1;
       }
     }
-    parkingLot.currentAvailableCarParkingSlot -= 1;
   }
 
   return assignedSlot;
