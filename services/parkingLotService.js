@@ -221,7 +221,7 @@ exports.updateParkingLot = async (data, parkingLotId) => {
 
   if (data.imageURLs) {
     parkingLotToUpdate.imageURLs = data.imageURLs;
-    toUpdateItems.imageURLs = true;
+    if (data.imageURLs.length >= 3) toUpdateItems.imageURLs = true;
   }
 
   if (data.bikeParkingCapacity) {
