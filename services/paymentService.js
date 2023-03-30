@@ -1,20 +1,22 @@
+const Payment = require("../models/paymentModel");
+
 exports.addNewPaymentForManualBooking = async (bookingId, amount) => {
   const payment = new Payment({ bookingId, paymentAmount: amount });
   await payment.save();
 };
 
 exports.updatePaymentForAdditionalDuration = async (bookingId, amount) => {
-  const booking = await getBookingById(bookingId);
-  if (!booking) {
-    const error = new Error("The booking does not exist");
-    error.statusCode = 404;
+  const payment = await Payment.findOne({ bookingId });
+  if (!payment) {
+    const error = new Error("The payment with given booking id does not exist");
+    error.statusCode = 401;
     throw error;
   }
-  booking.paymentAmount += amount;
+  payment.paymentAmount += amount;
 
-  await booking.update();
+  await payment.save();
 };
 
-const getBookingById = async (bookingId) => {
-  return await Booking.findById(bookingId);
+const getPaymentByBookingId = async (bookingId) => {
+  return await Payment.find({ bookingId });
 };

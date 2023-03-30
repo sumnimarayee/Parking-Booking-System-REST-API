@@ -1,6 +1,6 @@
 const { body, validationResult } = require("express-validator");
 
-const bookingValidator = [
+const manualBookingValidator = [
   [
     body("vehicleType")
       .exists()
@@ -18,13 +18,6 @@ const bookingValidator = [
       .withMessage("invalid vehicle plate no")
       .isLength({ min: 4, max: 4 })
       .withMessage("Vehicle plate no must be excatly 4 characters"),
-    body("bookedTime")
-      .exists()
-      .withMessage("Booked time is missing")
-      .notEmpty()
-      .withMessage("Booked time is empty")
-      .isString()
-      .withMessage("invalid booked time"),
     body("bookedParkingLot")
       .exists()
       .withMessage("booked parking lot is missing")
@@ -49,4 +42,4 @@ const bookingValidator = [
   },
 ];
 
-module.exports = bookingValidator;
+module.exports = manualBookingValidator;

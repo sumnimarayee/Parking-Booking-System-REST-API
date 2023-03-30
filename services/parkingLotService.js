@@ -275,9 +275,9 @@ exports.fetchByStaffId = async (staffId, filters) => {
   }
   data.parkingLot = parkingLot;
 
-  const bookings = bookingService.getDashboardBooking(parkingLot._id);
+  const bookings = await bookingService.getDashboardBooking(parkingLot._id);
 
-  data.bookings = bookings;
+  data.bookings = [...bookings];
 
   return data;
 };
