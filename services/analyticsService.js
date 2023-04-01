@@ -1,12 +1,15 @@
 const Booking = require("../models/bookingModel");
-const bookingRepository = require("../repositories/analyticsRepository");
+const ParkingLot = require("../models/parkingLotModel");
+const analyticsRepository = require("../repositories/analyticsRepository");
 
-exports.getTotalRevenueData = async (timePeriod) => {
+exports.getTotalRevenueData = async (timePeriod, parkingLotId) => {
   const label = [];
   const data = [];
   if (timePeriod === "thisWeek") {
     const response =
-      await bookingRepository.getBookingsForCurrentWeekGroupedByDay();
+      await analyticsRepository.getBookingsForCurrentWeekGroupedByDay(
+        parkingLotId
+      );
     const currentWeekDates = getWeekDatesToToday();
     currentWeekDates.forEach((date, index) => {
       if (index === 0) label.push("sunday");
@@ -26,7 +29,7 @@ exports.getTotalRevenueData = async (timePeriod) => {
         filteredData.forEach((bookingForDay) => {
           bookingForDay.bookings.forEach((booking) => {
             totalRevenueForDay =
-              totalRevenueForDay + booking?.payment?.paymentAmount;
+              totalRevenueForDay + (booking?.payment?.paymentAmount || 0);
           });
         });
         data.push(totalRevenueForDay.toFixed(2));
@@ -36,7 +39,9 @@ exports.getTotalRevenueData = async (timePeriod) => {
 
   if (timePeriod === "thisMonth") {
     const response =
-      await bookingRepository.getBookingsForCurrentMonthGroupedByWeek();
+      await analyticsRepository.getBookingsForCurrentMonthGroupedByWeek(
+        parkingLotId
+      );
     const currentWeekOfTheMonths = getCurrentWeekOfMonthToToday();
     currentWeekOfTheMonths.forEach((week, index) => {
       label.push(week);
@@ -63,7 +68,6 @@ exports.getTotalRevenueData = async (timePeriod) => {
 function getWeekDatesToToday() {
   const today = new Date();
   const currentDay = today.getDay();
-  const daysToSunday = currentDay === 0 ? 0 : 7 - currentDay;
   const sunday = new Date(
     today.getFullYear(),
     today.getMonth(),
@@ -96,25 +100,112 @@ function getCurrentWeekOfMonthToToday() {
   return weekNames.slice(0, currentWeekOfMonth);
 }
 
-function getPastDaysOfWeek() {
-  const daysOfWeek = [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ];
-  const today = new Date();
-  const todayDayOfWeek = today.getDay();
-  const pastDaysOfWeek = [];
-
-  for (let i = 0; i <= todayDayOfWeek; i++) {
-    pastDaysOfWeek.push(daysOfWeek[i]);
+exports.getTotalNumberOfBookingsData = async (filterData, parkingLotId) => {
+  const label = ["Two-Wheelers", "Four-Wheelers"];
+  const data = [];
+  let totalBooking = [];
+  if (filterData === "today") {
+    const data = await analyticsRepository.getBookingsForToday(parkingLotId);
+    totalBooking = [...data];
+  } else if (filterData === "thisWeek") {
+    const data = await analyticsRepository.getBookingsForCurrentWeek(
+      parkingLotId
+    );
+    totalBooking = [...data];
+  } else if (filterData === "thisMonth") {
+    const data = await analyticsRepository.getBookingsForCurrentMonth(
+      parkingLotId
+    );
+    totalBooking = [...data];
   }
 
-  return pastDaysOfWeek;
-}
+  if (totalBooking.length === 0) {
+    data.push(0, 0);
+  } else {
+    let twoWheelersBookingCount = 0;
+    let fourWheelersBookingCount = 0;
+    totalBooking.forEach((booking) => {
+      if (booking.vehicleType === "twoWheeler") {
+        twoWheelersBookingCount++;
+      } else if (booking.vehicleType === "fourWheeler") {
+        fourWheelersBookingCount++;
+      }
+    });
+    data.push(twoWheelersBookingCount, fourWheelersBookingCount);
+  }
+  return { label, data };
+};
 
-console.log(getPastDaysOfWeek());
+exports.getNumberOfBookingsPerHour = async (filterData, parkingLotId) => {
+  let totalBookings = [];
+  if (filterData === "today") {
+    totalBookings = await analyticsRepository.getBookingsForToday(parkingLotId);
+  } else if (filterData === "thisWeek") {
+    totalBookings = await analyticsRepository.getBookingsForCurrentWeek(
+      parkingLotId
+    );
+  } else if (filterData === "thisMonth") {
+    totalBookings = await analyticsRepository.getBookingsForCurrentMonth(
+      parkingLotId
+    );
+  }
+
+  const parkingLot = await ParkingLot.findById(parkingLotId);
+  const openingTime = parkingLot.openingTime.split(":")[0] + ":00";
+  const closingTime =
+    parkingLot.closingTime.split(":")[1] === "00"
+      ? parkingLot.closingTime
+      : parseInt(parkingLot.closingTime.split(":")[0]) + 1 + ":00";
+
+  const [openingHour, openingMinute] = openingTime.split(":").map(Number);
+  const [closingHour, closingMinute] = closingTime.split(":").map(Number);
+
+  const hourRanges = {};
+
+  // Loop through the totalBookings and group them by hour range and vehicle type
+  for (let hour = openingHour; hour < closingHour; hour++) {
+    const hourRange = `${hour}-${hour + 1}`;
+    const hourObjects = totalBookings.filter((obj) => {
+      const objHour = obj.createdAt.getHours();
+      const objMinute = obj.createdAt.getMinutes();
+      return (
+        (objHour === hour &&
+          objMinute >= openingMinute &&
+          objHour !== closingHour) ||
+        (objHour === closingHour && objMinute < closingMinute)
+      );
+    });
+
+    hourRanges[hourRange] = {
+      twoWheelerCount: hourObjects.filter(
+        (obj) => obj.vehicleType === "twoWheeler"
+      ).length,
+      fourWheelerCount: hourObjects.filter(
+        (obj) => obj.vehicleType === "fourWheeler"
+      ).length,
+    };
+  }
+
+  // Create three separate arrays to hold the hour ranges and their respective counts for each vehicle type
+  const label = Object.keys(hourRanges);
+  const twoWheelerData = Object.values(hourRanges).map(
+    ({ twoWheelerCount }) => twoWheelerCount
+  );
+  const fourWheelerData = Object.values(hourRanges).map(
+    ({ fourWheelerCount }) => fourWheelerCount
+  );
+
+  return { label, twoWheelerData, fourWheelerData };
+};
+
+exports.fetchTodayData = async (parkingLotId) => {
+  let totalRevenue = 0;
+  let totalBookings = 0;
+  const response = await analyticsRepository.getBookingsForToday(parkingLotId);
+  response?.forEach((booking) => {
+    totalRevenue = totalRevenue + (booking?.payment?.paymentAmount || 0);
+    totalBookings++;
+  });
+
+  return { totalRevenue: Number(totalRevenue).toFixed(2), totalBookings };
+};

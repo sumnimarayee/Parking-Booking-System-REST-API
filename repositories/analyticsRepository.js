@@ -1,7 +1,13 @@
 const Booking = require("../models/bookingModel");
+const { ObjectId } = require("mongodb");
 
-exports.getBookingsForCurrentWeekGroupedByDay = async () => {
+exports.getBookingsForCurrentWeekGroupedByDay = async (parkingLotId) => {
   return await Booking.aggregate([
+    {
+      $match: {
+        bookedParkingLot: ObjectId(parkingLotId),
+      },
+    },
     {
       $match: {
         createdAt: {
@@ -45,42 +51,14 @@ exports.getBookingsForCurrentWeekGroupedByDay = async () => {
     },
   ]);
 };
-
-exports.getBookingsForCurrentWeek = async () => {
+// 641c4ad5f19971a6462bf2f3
+exports.getBookingsForCurrentMonthGroupedByWeek = async (parkingLotId) => {
   return await Booking.aggregate([
     {
       $match: {
-        createdAt: {
-          $gte: new Date(
-            new Date().setHours(0, 0, 0, 0) -
-              new Date().getDay() * 24 * 60 * 60 * 1000
-          ),
-          $lte: new Date(
-            new Date().setHours(23, 59, 59, 999) +
-              (6 - new Date().getDay()) * 24 * 60 * 60 * 1000
-          ),
-        },
+        bookedParkingLot: ObjectId(parkingLotId),
       },
     },
-    {
-      $lookup: {
-        from: "payments",
-        localField: "_id",
-        foreignField: "bookingId",
-        as: "payment",
-      },
-    },
-    {
-      $unwind: {
-        path: "$payment",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-  ]);
-};
-
-exports.getBookingsForCurrentMonthGroupedByWeek = async () => {
-  return await Booking.aggregate([
     {
       $match: {
         createdAt: {
@@ -184,8 +162,51 @@ exports.getBookingsForCurrentMonthGroupedByWeek = async () => {
   ]);
 };
 
-exports.getBookingsForCurrentMonth = async () => {
+exports.getBookingsForCurrentWeek = async (parkingLotId) => {
   return await Booking.aggregate([
+    {
+      $match: {
+        bookedParkingLot: ObjectId(parkingLotId),
+      },
+    },
+    {
+      $match: {
+        createdAt: {
+          $gte: new Date(
+            new Date().setHours(0, 0, 0, 0) -
+              new Date().getDay() * 24 * 60 * 60 * 1000
+          ),
+          $lte: new Date(
+            new Date().setHours(23, 59, 59, 999) +
+              (6 - new Date().getDay()) * 24 * 60 * 60 * 1000
+          ),
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "payments",
+        localField: "_id",
+        foreignField: "bookingId",
+        as: "payment",
+      },
+    },
+    {
+      $unwind: {
+        path: "$payment",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ]);
+};
+
+exports.getBookingsForCurrentMonth = async (parkingLotId) => {
+  return await Booking.aggregate([
+    {
+      $match: {
+        bookedParkingLot: ObjectId(parkingLotId),
+      },
+    },
     {
       $match: {
         createdAt: {
@@ -196,6 +217,37 @@ exports.getBookingsForCurrentMonth = async () => {
             0
           ),
         },
+      },
+    },
+    {
+      $lookup: {
+        from: "payments",
+        localField: "_id",
+        foreignField: "bookingId",
+        as: "payment",
+      },
+    },
+    {
+      $unwind: {
+        path: "$payment",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+  ]);
+};
+
+exports.getBookingsForToday = async (parkingLotId) => {
+  var today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return await Booking.aggregate([
+    {
+      $match: {
+        bookedParkingLot: ObjectId(parkingLotId),
+      },
+    },
+    {
+      $match: {
+        createdAt: { $gte: today },
       },
     },
     {

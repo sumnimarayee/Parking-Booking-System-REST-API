@@ -12,7 +12,8 @@ exports.updatePaymentForAdditionalDuration = async (bookingId, amount) => {
     error.statusCode = 401;
     throw error;
   }
-  payment.paymentAmount += amount;
+  const initialPayment = Number(payment.paymentAmount);
+  payment.paymentAmount = Number(amount) + initialPayment;
 
   await payment.save();
 };

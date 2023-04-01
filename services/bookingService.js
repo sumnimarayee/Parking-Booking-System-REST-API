@@ -3,6 +3,8 @@ const ParkingLot = require("../models/parkingLotModel");
 const parkingLotService = require("../services/parkingLotService");
 const Payment = require("../models/paymentModel");
 const paymentService = require("../services/paymentService");
+const { ObjectId } = require("mongodb");
+
 const moment = require("moment");
 
 const bookingTimeValidation = (
@@ -269,7 +271,7 @@ exports.getDashboardBooking = async (parkingLotId) => {
         createdAt: { $gte: today },
       },
     },
-    { $match: { bookedParkingLot: parkingLotId } },
+    { $match: { bookedParkingLot: ObjectId(parkingLotId) } },
     {
       $lookup: {
         from: "users",
