@@ -18,4 +18,5 @@ router.post(
   bookingController.closeBooking
 );
 
+router.get("/user/:userId/", bookingController.fetchUserBookings);
 module.exports = router;

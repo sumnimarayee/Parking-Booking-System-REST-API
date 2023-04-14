@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const ParkingLot = require("../models/parkingLotModel");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const userService = require("../services/userService");
 
 exports.register = (req, res, next) => {
   try {
@@ -175,5 +176,29 @@ exports.logout = async (req, res, next) => {
   } catch (err) {
     // next(err);
     console.log(err);
+  }
+};
+
+exports.updateUser = updateUser = async (req, res, next) => {
+  try {
+    const response = await userService.updateUser(req.params.id, req.body);
+    res.status(200).json({
+      message: "Success",
+      data: response,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.getUserData = async (req, res, next) => {
+  try {
+    const response = await userService.getUserData(req.params.id);
+    res.status(200).json({
+      message: "Success",
+      data: response,
+    });
+  } catch (err) {
+    next(err);
   }
 };

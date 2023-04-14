@@ -35,10 +35,11 @@ const userSchema = new mongoose.Schema(
     },
     vehicleType: {
       type: String,
-      required: [true, "A user must have vechicle type"],
     },
+    plateNumber: String,
     latitude: String,
     longitude: String,
+    profilePictureURL: String,
     refreshToken: String,
   },
   { timestamps: true }

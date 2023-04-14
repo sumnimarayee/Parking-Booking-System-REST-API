@@ -7,6 +7,21 @@ const { validateToken } = require("./utils/authenticationHandler");
 const cookieParser = require("cookie-parser");
 const { credentials } = require("./utils/credentials");
 const corsOptions = require("./utils/corsOption");
+const http = require("http").Server(app);
+const { Server } = require("socket.io");
+
+const io = new Server({
+  cors: {
+    origin: "*",
+  },
+});
+io.on("connection", (socket) => {
+  console.log("a user connected");
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+  });
+});
+io.listen(http);
 
 // Handle options credentials check - before CORS!
 // and fetch cookies credentials requirement
@@ -30,4 +45,4 @@ app.use((error, req, res, next) => {
   res.status(status).json({ error: true, message: message });
 });
 
-module.exports = app;
+module.exports = http;

@@ -3,6 +3,7 @@ const ParkingLot = require("../models/parkingLotModel");
 const parkingLotService = require("../services/parkingLotService");
 const Payment = require("../models/paymentModel");
 const paymentService = require("../services/paymentService");
+const bookingRepository = require("../repositories/bookingsRepository");
 const { ObjectId } = require("mongodb");
 
 const moment = require("moment");
@@ -380,4 +381,15 @@ const computeTotalAmountFromMinutes = (minutes, vehicleType, parkingLot) => {
 
   const pricePerMinute = pricePerHour / 60;
   return Number(pricePerMinute * minutes).toFixed(2);
+};
+
+exports.fetchBookingsForUser = async (userId, timePeriod) => {
+  let bookings = [];
+  if (timePeriod === "today") {
+    bookings = await bookingRepository.fetchTodayBookingsForUser(userId);
+  } else if (timePeriod === "total") {
+    bookings = await bookingRepository.fetchAllBookingsForUser(userId);
+  }
+
+  return { bookings };
 };

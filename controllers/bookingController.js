@@ -53,3 +53,20 @@ exports.closeBooking = async (req, res, next) => {
     next(err);
   }
 };
+
+exports.fetchUserBookings = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { timePeriod } = req.query;
+    const response = await bookingService.fetchBookingsForUser(
+      userId,
+      timePeriod
+    );
+    res.status(200).json({
+      message: "Success",
+      data: response,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
