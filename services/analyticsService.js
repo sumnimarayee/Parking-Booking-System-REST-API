@@ -65,8 +65,8 @@ exports.getTotalRevenueData = async (timePeriod, parkingLotId) => {
   return { label, data };
 };
 
-function getWeekDatesToToday() {
-  const today = new Date();
+function getWeekDatesToToday(startingDate) {
+  const today = startingDate || new Date();
   const currentDay = today.getDay();
   const sunday = new Date(
     today.getFullYear(),
@@ -209,3 +209,5 @@ exports.fetchTodayData = async (parkingLotId) => {
 
   return { totalRevenue: Number(totalRevenue).toFixed(2), totalBookings };
 };
+
+exports.getWeekDatesToToday = getWeekDatesToToday;

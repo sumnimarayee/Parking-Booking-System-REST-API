@@ -7,10 +7,17 @@ const bookingService = require("../services/bookingService");
 function timeout(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-exports.fetchAllParkingLot = async (minPrice, maxPrice, vehicleType) => {
+exports.fetchAllParkingLot = async (
+  minPrice,
+  maxPrice,
+  vehicleType,
+  isBookingUser,
+  isSuperAdmin
+) => {
   //place in repository
-  const query = [
-    {
+  const query = [];
+  if (isBookingUser) {
+    query.push({
       $match: {
         updatedItems: {
           bikeParkingCapacity: true,
@@ -25,23 +32,26 @@ exports.fetchAllParkingLot = async (minPrice, maxPrice, vehicleType) => {
           imageURLs: true,
         },
       },
+    });
+  }
+
+  query.push({
+    $project: {
+      _id: 1,
+      name: 1,
+      longitude: 1,
+      latitude: 1,
+      bikeParkingCostPerHour: 1,
+      carParkingCostPerHour: 1,
+      bikeParkingCapacity: 1,
+      carParkingCapacity: 1,
+      openingTime: 1,
+      closingTime: 1,
+      location: 1,
+      imageURLs: 1,
     },
-    {
-      $project: {
-        _id: 1,
-        name: 1,
-        longitude: 1,
-        latitude: 1,
-        bikeParkingCostPerHour: 1,
-        carParkingCostPerHour: 1,
-        bikeParkingCapacity: 1,
-        carParkingCapacity: 1,
-        openingTime: 1,
-        closingTime: 1,
-        location: 1,
-      },
-    },
-  ];
+  });
+
   const numberOnlyRegex = /^[0-9]*$/;
   if (minPrice !== null && minPrice !== undefined) {
     if (numberOnlyRegex.test(minPrice) === false) {
@@ -65,7 +75,6 @@ exports.fetchAllParkingLot = async (minPrice, maxPrice, vehicleType) => {
     maxPrice !== undefined
   ) {
     if (parseInt(minPrice) > parseInt(maxPrice)) {
-      console.log("minmax = " + minPrice, maxPrice);
       const error = new Error("minPrice must be less than maxPrice");
       error.statusCode = 401;
       throw error;
@@ -94,7 +103,6 @@ exports.fetchAllParkingLot = async (minPrice, maxPrice, vehicleType) => {
       }
     } else if (maxPrice === null || maxPrice === undefined) {
       if (vehicleType === "twoWheeler") {
-        console.log("two wheeler");
         query.push({
           $match: {
             bikeParkingCostPerHour: { $gte: parseInt(minPrice) },

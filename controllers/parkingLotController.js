@@ -3,10 +3,13 @@ const parkingLotService = require("../services/parkingLotService");
 exports.getAllParkingLots = async (req, res, next) => {
   try {
     const { minPrice, maxPrice, vehicleType } = req.query;
+    const { isBookingUser, isSuperAdmin } = req.user;
     const parkingLots = await parkingLotService.fetchAllParkingLot(
       minPrice,
       maxPrice,
-      vehicleType
+      vehicleType,
+      isBookingUser,
+      isSuperAdmin
     );
     res.status(200).json({
       message: "ok",

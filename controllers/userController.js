@@ -39,7 +39,6 @@ exports.login = async (req, res, next) => {
   try {
     var email = req.body.email;
     var password = req.body.password;
-
     const user = await User.findOne({ email });
     if (user) {
       bcrypt.compare(password, user.password, async function (err, ismatch) {
@@ -169,7 +168,6 @@ exports.logout = async (req, res, next) => {
     // Delete refreshToken in db
     foundUser.refreshToken = "";
     const result = await foundUser.save();
-    console.log(result);
 
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
     res.sendStatus(204);

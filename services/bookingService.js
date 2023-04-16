@@ -393,3 +393,7 @@ exports.fetchBookingsForUser = async (userId, timePeriod) => {
 
   return { bookings };
 };
+
+exports.computeTotalAmountFromMinutes = computeTotalAmountFromMinutes;
+exports.bookingTimeValidation = bookingTimeValidation;
+exports.getMinutesFromTime = getMinutesFromTime;
