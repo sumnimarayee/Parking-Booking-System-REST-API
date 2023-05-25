@@ -189,6 +189,25 @@ exports.updateUser = updateUser = async (req, res, next) => {
   }
 };
 
+exports.addNotificationToken = addNotificationToken = async (
+  req,
+  res,
+  next
+) => {
+  try {
+    const { notificationToken } = req.body;
+    const response = await userService.updateUser(req.params.id, {
+      notificationToken,
+    });
+    res.status(200).json({
+      message: "Success",
+      data: response,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.getUserData = async (req, res, next) => {
   try {
     const response = await userService.getUserData(req.params.id);

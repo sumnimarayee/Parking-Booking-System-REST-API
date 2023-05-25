@@ -66,6 +66,10 @@ exports.updateUser = async (userId, body) => {
   if (body.profilePictureURL) {
     userToUpdate.profilePictureURL = body.profilePictureURL;
   }
+
+  if (body.notificationToken) {
+    userToUpdate.notificationToken = body.notificationToken;
+  }
   await userToUpdate.save();
 
   return userToUpdate;

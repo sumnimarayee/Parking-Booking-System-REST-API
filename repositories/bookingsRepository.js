@@ -41,7 +41,11 @@ exports.fetchAllBookingsForUser = async (userId) => {
 exports.fetchTodayBookingsForUser = async (userId) => {
   return await Booking.aggregate([
     {
-      $match: { $gte: new Date().setHours(0, 0, 0, 0) },
+      $match: {
+        createdAt: {
+          $gte: new Date(new Date().setHours(00, 00, 00)),
+        },
+      },
     },
     {
       $match: {

@@ -14,7 +14,6 @@ exports.fetchAllParkingLot = async (
   isBookingUser,
   isSuperAdmin
 ) => {
-  //place in repository
   const query = [];
   if (isBookingUser) {
     query.push({

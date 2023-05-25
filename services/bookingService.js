@@ -7,6 +7,8 @@ const bookingRepository = require("../repositories/bookingsRepository");
 const { ObjectId } = require("mongodb");
 
 const moment = require("moment");
+const User = require("../models/userModel");
+const { sendNotification } = require("../utils/notificationHandler");
 
 const bookingTimeValidation = (
   openingTime,
@@ -159,6 +161,19 @@ exports.createNewBooking = async (
     paymentAmount: totalAmount,
   });
   const savedPayment = await payment.save();
+
+  console.log("fjnkwjen");
+  console.log(parkingLot.managingStaff);
+  const staff = await User.findById(parkingLot.managingStaff);
+  console.log(staff);
+  const token = staff.notificationToken;
+  console.log(token);
+  console.log("fkjnwkf");
+  await sendNotification(
+    token,
+    "New Booking",
+    `${vehicleType} Boooking made for ${bookedTime}. Slot assigned is ${assignedSlot}`
+  );
 
   return booking;
 };

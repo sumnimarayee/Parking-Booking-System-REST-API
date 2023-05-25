@@ -15,6 +15,4 @@ router.patch(
   userController.updatePassword
 );
 
-// for logout implementation, we need to implement the storage of refresh token in the user model as well and in the generate refresh token service, need to check if the user has refresh token stored or not. If not then the user has logged out and refresh token api wont work
-
 module.exports = router;

@@ -41,6 +41,7 @@ const userSchema = new mongoose.Schema(
     longitude: String,
     profilePictureURL: String,
     refreshToken: String,
+    notificationToken: String,
   },
   { timestamps: true }
 );

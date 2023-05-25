@@ -7,8 +7,7 @@ const http = require("./app");
 const DB = mongoose
 
   .connect(process.env.DATABASE, {
-    //connect method return promise.
-    useNewUrlParser: true, // deal with some deprecation warnings.
+    useNewUrlParser: true,
   })
   .then(() => console.log("DB connection successful!"));
 
