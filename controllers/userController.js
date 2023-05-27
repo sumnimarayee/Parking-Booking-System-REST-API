@@ -17,7 +17,6 @@ exports.register = (req, res, next) => {
         password: hashed,
         contactNo: req.body.contactNo,
         gender: req.body.gender,
-        vehicleType: req.body.vehicleType,
         isStaff: false,
         isBookingUser: true,
         isSuperAdmin: false,

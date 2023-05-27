@@ -58,12 +58,10 @@ exports.updateParkingLot = async (req, res, next) => {
       req.body,
       parkingLotId
     );
-    setTimeout(() => {
-      res.status(200).json({
-        message: "Success",
-        data,
-      });
-    }, 5000);
+    res.status(200).json({
+      message: "Success",
+      data,
+    });
     // res.status(200).json({
     //   message: "Success",
     //   data,

@@ -39,13 +39,6 @@ const registrationValidator = [
       .withMessage("gender is empty")
       .isString()
       .withMessage("invalid gender"),
-    body("vehicleType")
-      .exists()
-      .withMessage("vehicle type is missing")
-      .notEmpty()
-      .withMessage("vehicle type is empty")
-      .isString()
-      .withMessage("invalid vehicle type"),
   ],
   /**
    * @param {express.Request} req

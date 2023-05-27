@@ -22,7 +22,7 @@ router.get(
 );
 router.get(
   "/:id",
-  validateRole(["user"]),
+  validateRole(["user", "staff"]),
   ratingController.getAllParkingLotRatings
 );
 

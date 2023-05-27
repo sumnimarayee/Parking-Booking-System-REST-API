@@ -11,7 +11,7 @@ router.get(
 );
 router.delete(
   "/:id",
-  validateRole(["user", "staff", "superAdmin"]),
+  validateRole(["superAdmin"]),
   parkingLotController.deleteParkingLot
 );
 router.get(
