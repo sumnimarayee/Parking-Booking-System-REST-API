@@ -7,6 +7,7 @@ const bookingRoutes = require("./routes/bookingRoute");
 const analyticsRoute = require("./routes/analyticsRoute");
 const userRoute = require("./routes/userRoutes");
 const ratingRoute = require("./routes/ratingRoutes");
+const paymentRoute = require("./routes/paymentRoute");
 const app = require("./app");
 
 const router = express.Router();
@@ -15,4 +16,6 @@ router.use("/booking", bookingRoutes);
 router.use("/analytics", analyticsRoute);
 router.use("/users", userRoute);
 router.use("/ratings", ratingRoute);
+router.use("/payments", paymentRoute);
+paymentRoute;
 module.exports = router;

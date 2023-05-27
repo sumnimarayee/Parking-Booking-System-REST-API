@@ -195,6 +195,9 @@ exports.addNotificationToken = addNotificationToken = async (
   next
 ) => {
   try {
+    console.log(
+      "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^adding notification token"
+    );
     const { notificationToken } = req.body;
     const response = await userService.updateUser(req.params.id, {
       notificationToken,

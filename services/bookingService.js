@@ -162,13 +162,10 @@ exports.createNewBooking = async (
   });
   const savedPayment = await payment.save();
 
-  console.log("fjnkwjen");
-  console.log(parkingLot.managingStaff);
   const staff = await User.findById(parkingLot.managingStaff);
-  console.log(staff);
   const token = staff.notificationToken;
+  console.log("sending notification");
   console.log(token);
-  console.log("fkjnwkf");
   await sendNotification(
     token,
     "New Booking",

@@ -11,17 +11,22 @@ const corsOptions = require("./utils/corsOption");
 const http = require("http").Server(app);
 const { Server } = require("socket.io");
 const { sendNotification } = require("./utils/notificationHandler");
+const paymentRoute = require("./routes/paymentRoute");
 require("./utils/cron");
 const io = new Server({
   cors: {
     origin: "*",
   },
 });
-sendNotification(
-  "fvRPVfGHEJaeZhyZExMK0e:APA91bEa0UWV45-iiXlIWvy67jauLIkbfffzmQ6LO3EiIMfgL_R_YzK-YPnrRYaAxOlvd7cXX2Kav7dgAA-NR7ZuAEyP-D8rpUNNX_ms_pQNEBEEVgOQpHBodNQnU_15LhZjzMMEWlHt",
-  "Booking Expired",
-  "Your booking has been expired. You will be charged extra amount when checking out"
-);
+
+app.get("/notify", (req, res, next) => {
+  sendNotification(
+    // "fvRPVfGHEJaeZhyZExMK0e:APA91bEa0UWV45-iiXlIWvy67jauLIkbfffzmQ6LO3EiIMfgL_R_YzK-YPnrRYaAxOlvd7cXX2Kav7dgAA-NR7ZuAEyP-D8rpUNNX_ms_pQNEBEEVgOQpHBodNQnU_15LhZjzMMEWlHt",
+    "d-T4_910ZEipTkCsr4cr4P:APA91bHff6upzSQypylTt9N_68Xb1YJ8FDlZGQt6ninelgPiw0fYKobMW4BarQp9uhVrN6k7AtQ88lEDfAENueop-7L3JIpH4T3izhY6PNnq5RdeyWDmDhkYmm6blGcGNGwN6twQYqHk",
+    "Test meessage",
+    "Test message"
+  );
+});
 io.on("connection", (socket) => {
   socket.on("disconnect", () => {});
 });
