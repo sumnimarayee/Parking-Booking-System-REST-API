@@ -164,8 +164,6 @@ exports.createNewBooking = async (
 
   const staff = await User.findById(parkingLot.managingStaff);
   const token = staff.notificationToken;
-  console.log("sending notification");
-  console.log(token);
   await sendNotification(
     token,
     "New Booking",
